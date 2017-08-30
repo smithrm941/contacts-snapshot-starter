@@ -98,3 +98,23 @@ nav .search-form input {
   color: red;
   font-weight: bold;
 }
+
+.sign-up-form label {
+  display: block;
+  margin-bottom: 0.5em;
+}
+
+.sign-up-form label > span {
+  display: inline-block;
+  min-width: 10em;
+}
+
+.log-in-form label {
+  display: block;
+  margin-bottom: 0.5em;
+}
+
+.log-in-form label > span {
+  display: inline-block;
+  min-width: 5em;
+}

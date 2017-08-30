@@ -3,6 +3,14 @@ const {renderError} = require('../utils')
 
 const router = require('express').Router()
 
+router.get('/signup', (request, response) => {
+  response.render('signup')
+})
+
+router.get('/login', (request, response) => {
+  response.render('login')
+})
+
 router.get('/new', (request, response) => {
   response.render('new')
 })
