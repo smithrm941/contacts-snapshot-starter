@@ -1,18 +1,18 @@
 <%- include header.ejs %>
 
-  <form method="post" action="/login" class="sign-up-form">
+  <form method="post" action="/contacts/signup" class="sign-up-form">
     <label>
       <span>Username:</span>
-      <input type="text"/>
+      <input type="text" name="username"/>
     </label>
     <label>
       <span>Password:</span>
-      <input type="text"/>
+      <input type="text" name="password"/>
     </label>
-    <label>
+    <!-- <label>
       <span>Confirm Password:</span>
       <input type="text"/>
-    </label>
+    </label> -->
     <input type="submit" value="Submit"/>
   </form>
 

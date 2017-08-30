@@ -1,10 +1,23 @@
 const DbContacts = require('../../db/contacts')
+const DbUsers = require('../../db/users')
 const {renderError} = require('../utils')
 
 const router = require('express').Router()
 
 router.get('/signup', (request, response) => {
   response.render('signup')
+})
+
+router.post('/signup', (request, response, next) => {
+  console.log(request.body)
+  DbUsers.createUser(request.body)
+    .then(function(user) {
+      if (user) {
+        return response.redirect('/login')
+        next()
+      }
+    })
+    .catch( error => renderError(error, response, response) )
 })
 
 router.get('/login', (request, response) => {
