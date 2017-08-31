@@ -1,5 +1,4 @@
 const db = require('./db')
-const bcrypt = require('bcrypt')
 
 const createUser = function(user){
   return db.query(`
@@ -12,11 +11,25 @@ const createUser = function(user){
     `,
     [
       user.username,
-      user.password,
+      user.password
     ])
     .catch(error => error);
 }
 
+const findUser = function(user){
+  return db.query(`
+    SELECT
+      *
+    FROM
+      users
+    WHERE
+      username = $1`,
+      [user]
+    )
+    .catch(error => error);
+}
+
 module.exports = {
-  createUser
+  createUser,
+  findUser
 }

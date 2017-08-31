@@ -1,9 +1,11 @@
 const express = require('express')
 const bodyParser = require('body-parser')
 const dbContacts = require('./db/contacts')
+const dbUsers = require('./db/users')
 const app = express()
 const {renderError} = require('./server/utils')
 const routes = require('./server/routes');
+const session = require('express-session')
 
 app.set('view engine', 'ejs');
 app.set('views', __dirname + '/views')
@@ -14,6 +16,15 @@ app.use((request, response, next) => {
   response.locals.query = ''
   next()
 })
+app.use(session({
+  key: 'user_id',
+  secret: 'thin lizzy',
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    expires: 600000
+  }
+}))
 
 app.use('/', routes)
 

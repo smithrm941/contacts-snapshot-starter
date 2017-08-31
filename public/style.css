@@ -106,7 +106,7 @@ nav .search-form input {
 
 .sign-up-form label > span {
   display: inline-block;
-  min-width: 5em;
+  min-width: 10em;
 }
 
 .log-in-form label {
