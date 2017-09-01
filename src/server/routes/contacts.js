@@ -7,19 +7,18 @@ const bcrypt = require('bcrypt')
 const router = require('express').Router()
 
 router.get('/flash', (request, response) => {
-  request.flash('error', 'This username is already taken.')
+  request.flash('nameTaken', 'This username is already taken.')
   response.redirect('/contacts/signup')
 })
 
 router.get('/signup', (request, response) => {
-  response.render('signup', {message: request.flash('error')})
+  response.render('signup', {message: request.flash('nameTaken')})
 })
 
 router.post('/signup', (request, response) => {
   const { username, password, confirmedPassword } = request.body
   if(password !== confirmedPassword){
-    console.log("passwords don't match")
-    //How do I use this in flash message too?
+    response.render('signup')
   } else {
     DbUsers.findUser(username).then( users => {
       const userExists = (users[0].username === username)
@@ -42,7 +41,6 @@ router.post('/signup', (request, response) => {
 
 router.get('/login', (request, response) => {
   if(request.session.username !== undefined){
-    console.log('already logged in')
     response.redirect('/')
   } else {
     response.render('login')
@@ -52,16 +50,14 @@ router.get('/login', (request, response) => {
 router.post('/login', (request, response, next) => {
   const { username, password, confirmedPassword } = request.body
   DbUsers.findUser(username)
-    .then(function(users) {
+    .then(users => {
       return user.comparePassword(password, users[0].password)
       .then(match => {
         if(username === users[0].username && match){
-          console.log('logged in!')
           request.session.username = users[0].username
           request.session.role = users[0].role
           response.redirect('/')
         } else {
-          console.log('wrong info')
           response.render('login')
         }
       }).catch(error => next(error))
@@ -69,7 +65,6 @@ router.post('/login', (request, response, next) => {
 })
 
 router.get('/logout', (request, response) => {
-  console.log('logged out')
   request.session.destroy()
   response.redirect('/contacts/login')
 })
@@ -80,14 +75,13 @@ router.get('/new', (request, response) => {
   } else if(request.session.username && request.session.role === 'admin') {
     response.render('new')
   } else{
-    response.render('/contacts/not_found')
-    //How do I do that status 403 thing?????***********
+    response.status(403).send()
   }
 })
 
 router.post('/', (request, response, next) => {
     DbContacts.createContact(request.body)
-      .then(function(contact) {
+      .then(contact => {
         if (contact) return response.redirect(`/contacts/${contact[0].id}`)
         next()
       })
@@ -98,7 +92,7 @@ router.get('/:contactId', (request, response, next) => {
     const contactId = request.params.contactId
     if (!contactId || !/^\d+$/.test(contactId)) return next()
     DbContacts.getContact(contactId)
-      .then(function(contact) {
+      .then(contact => {
         if (contact) return response.render('show', { contact })
         next()
       })
@@ -109,11 +103,10 @@ router.get('/:contactId', (request, response, next) => {
 router.get('/:contactId/delete', (request, response, next) => {
     const contactId = request.params.contactId
     if(request.session.role !== 'admin'){
-      console.log('NOT AUTHORIZED!!! Shame on you...')
-      //how to hide delete links?******
+      response.status(403).send()
     } else {
       DbContacts.deleteContact(contactId)
-      .then(function(contact) {
+      .then(contact => {
         if (contact) return response.redirect('/')
         next()
       })

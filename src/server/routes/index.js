@@ -1,6 +1,5 @@
 const router = require('express').Router();
 const contacts = require('./contacts')
-const users = require('./users')
 const DbContacts = require('../../db/contacts');
 
 router.get('/', (request, response) => {
