@@ -5,6 +5,7 @@ const dbUsers = require('./db/users')
 const app = express()
 const {renderError} = require('./server/utils')
 const routes = require('./server/routes');
+const flash = require('connect-flash');
 const session = require('express-session')
 
 app.set('view engine', 'ejs');
@@ -25,6 +26,8 @@ app.use(session({
     expires: 600000
   }
 }))
+
+app.use(flash())
 
 app.use('/', routes)
 

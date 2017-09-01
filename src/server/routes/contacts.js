@@ -1,58 +1,88 @@
 const DbContacts = require('../../db/contacts')
 const DbUsers = require('../../db/users')
 const {renderError} = require('../utils')
+const user = require('../auth')
+const bcrypt = require('bcrypt')
 
 const router = require('express').Router()
 
+router.get('/flash', (request, response) => {
+  request.flash('error', 'This username is already taken.')
+  response.redirect('/contacts/signup')
+})
 
 router.get('/signup', (request, response) => {
-  response.render('signup')
+  response.render('signup', {message: request.flash('error')})
 })
 
-router.post('/signup', (request, response, next) => {
-  DbUsers.createUser(request.body)
-    .then(function(user) {
-      if (user) {
-        request.session.username = user[0].username
-        return response.redirect('/contacts/login')
-        next()
+router.post('/signup', (request, response) => {
+  const { username, password, confirmedPassword } = request.body
+  if(password !== confirmedPassword){
+    console.log("passwords don't match")
+    //How do I use this in flash message too?
+  } else {
+    DbUsers.findUser(username).then( users => {
+      const userExists = (users[0].username === username)
+      if(userExists) {
+        response.redirect('/contacts/flash')
       }
+    }).catch(err => {
+      user.createValidUser(password)
+      .then(hash => {
+        DbUsers.createUser(username, hash)
+        .then(createdUser => {
+          request.session.username = createdUser[0].username
+          return response.redirect('/')
+        })
+      })
     })
-    .catch( error => renderError(error, response, response) )
+  }
 })
+
 
 router.get('/login', (request, response) => {
   if(request.session.username !== undefined){
     console.log('already logged in')
     response.redirect('/')
-  }
+  } else {
     response.render('login')
+  }
 })
 
 router.post('/login', (request, response, next) => {
-  console.log(request.body)
-  DbUsers.findUser(request.body.username)
-    .then(function(user) {
-      console.log(user)
-      if(request.body.username === user[0].username){
-        console.log('logged in!')
-        request.session.username = user[0].username
-        response.redirect('/')
-      }
+  const { username, password, confirmedPassword } = request.body
+  DbUsers.findUser(username)
+    .then(function(users) {
+      return user.comparePassword(password, users[0].password)
+      .then(match => {
+        if(username === users[0].username && match){
+          console.log('logged in!')
+          request.session.username = users[0].username
+          request.session.role = users[0].role
+          response.redirect('/')
+        } else {
+          console.log('wrong info')
+          response.render('login')
+        }
+      }).catch(error => next(error))
     })
 })
 
 router.get('/logout', (request, response) => {
-  delete request.session.username
-  response.render('logout')
+  console.log('logged out')
+  request.session.destroy()
+  response.redirect('/contacts/login')
 })
 
 router.get('/new', (request, response) => {
-  console.log(request.session)
   if(request.session.username === undefined){
     response.redirect('/contacts/login')
-  }
+  } else if(request.session.username && request.session.role === 'admin') {
     response.render('new')
+  } else{
+    response.render('/contacts/not_found')
+    //How do I do that status 403 thing?????***********
+  }
 })
 
 router.post('/', (request, response, next) => {
@@ -78,12 +108,17 @@ router.get('/:contactId', (request, response, next) => {
 
 router.get('/:contactId/delete', (request, response, next) => {
     const contactId = request.params.contactId
-    DbContacts.deleteContact(contactId)
+    if(request.session.role !== 'admin'){
+      console.log('NOT AUTHORIZED!!! Shame on you...')
+      //how to hide delete links?******
+    } else {
+      DbContacts.deleteContact(contactId)
       .then(function(contact) {
         if (contact) return response.redirect('/')
         next()
       })
       .catch( error => renderError(error, response, response) )
+    }
 })
 
 router.get('/search', (request, response, next) => {

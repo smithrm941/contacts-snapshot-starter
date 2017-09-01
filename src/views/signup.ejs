@@ -1,19 +1,22 @@
 <%- include header.ejs %>
-
+  <% if (message) { %>
+    <p><%= message %></p>
+  <% } %>
   <form method="post" action="/contacts/signup" class="sign-up-form">
     <h1>Sign Up</h1>
+    <h3>Already registered? <a href="/contacts/login">Click Here</a></h3>
     <label>
       <span>Username:</span>
       <input type="text" name="username"/>
     </label>
     <label>
       <span>Password:</span>
-      <input type="text" name="password"/>
+      <input type="password" name="password"/>
     </label>
-    <!-- <label>
+    <label>
       <span>Confirm Password:</span>
-      <input type="text" name="confirmed-password"/>
-    </label> -->
+      <input type="password" name="confirmedPassword"/>
+    </label>
     <input type="submit" value="Submit"/>
   </form>
 

@@ -1,6 +1,6 @@
 const db = require('./db')
 
-const createUser = function(user){
+const createUser = function(user, password){
   return db.query(`
     INSERT INTO
       users (username, password)
@@ -10,8 +10,8 @@ const createUser = function(user){
       *
     `,
     [
-      user.username,
-      user.password
+      user,
+      password
     ])
     .catch(error => error);
 }
@@ -29,7 +29,16 @@ const findUser = function(user){
     .catch(error => error);
 }
 
+const getAllUsers = function(){
+  return db.any(`
+    SELECT
+      *
+    FROM
+      users`)
+}
+
 module.exports = {
   createUser,
-  findUser
+  findUser,
+  getAllUsers
 }
